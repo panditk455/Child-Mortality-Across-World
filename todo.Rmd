@@ -1,0 +1,168 @@
+
+
+### Introduction:
+
+Child mortality is the mortality of children under the age of five. Child mortality is a good topic to look into as it is an indicator of a country's health, development and the economic condition. It reflects the country healthcare system, socioeconomic conditions, and overall well-being of the people in that country or region. High child mortality rates often shows the inadequate healthcare services, poor maternal health, lack of parental care, and the poverty. Trends in child mortality can reveal the effectiveness of public health policies and guide resource allocation to the most affected areas. Moreover, child mortality rates highlight issues of inequality and inequity, disproportionately affecting the poorest and most marginalized communities. Addressing child mortality is essential not only for protecting the fundamental human right to life but also for fostering sustainable development and improving societal well-being.
+
+
+### 1. **Line Charts**
+**Purpose**: To show trends over time.
+
+
+
+**Examples**:
+- **Global Trend**: A line chart showing the global child mortality rate over the past few decades.
+- **Regional Trends**: Line charts comparing child mortality rates across different regions (e.g., Sub-Saharan Africa, South Asia, etc.).
+
+
+
+### 2. **Bar Charts**
+**Purpose**: To compare values between different groups or categories.
+
+**Examples**:
+- **Country Comparison**: A bar chart comparing the latest child mortality rates of various countries.
+- **Top/Bottom Countries**: Bar charts highlighting the countries with the highest and lowest child mortality rates.
+
+### 3. **Heatmaps**
+**Purpose**: To display data with varying intensities of color to show the concentration of values.
+
+**Examples**:
+- **Country Heatmap**: A heatmap showing the child mortality rate by country, where the color intensity represents the mortality rate.
+
+### 4. **Choropleth Maps**
+**Purpose**: To visualize how a variable varies across a geographic area.
+
+**Examples**:
+- **Global Map**: A choropleth map showing child mortality rates across the world.
+- **Regional Focus**: A choropleth map focused on a specific continent or region, like Africa or Asia.
+
+### 5. **Scatter Plots**
+**Purpose**: To explore relationships between two variables.
+
+**Examples**:
+- **Mortality vs. GDP**: A scatter plot showing the relationship between child mortality rates and GDP per capita.
+- **Mortality vs. Education**: A scatter plot examining the relationship between child mortality rates and literacy rates or average years of schooling.
+
+### 6. **Bubble Charts**
+**Purpose**: To show relationships and add a third dimension of data with bubble size.
+
+**Examples**:
+- **Mortality, GDP, and Population**: A bubble chart where each country is a bubble, with child mortality rate on one axis, GDP per capita on another, and bubble size representing the population size.
+
+### 7. **Interactive Data Tables**
+**Purpose**: To allow users to explore the raw data in detail.
+
+**Examples**:
+- **Country Data Table**: An interactive table with child mortality rates, GDP, literacy rates, and other relevant metrics for each country. Users can sort and filter the data.
+
+### 8. **Time-Series Animation**
+**Purpose**: To show changes over time dynamically.
+
+
+**Examples**:
+- **Animated Line Chart**: An animated line chart that shows the change in child mortality rates over time for different countries or regions.
+- **Animated Map**: An animated choropleth map showing the change in child mortality rates over time.
+
+
+#Use the even reactive with the action buttton as it is going to make the app complex enough:
+
+### **Narrative and Analysis**
+In the narrative section of your Shiny app, you can include textual explanations and analyses to complement your visualizations. Here are some points to cover:
+- **Historical Trends**: Discuss the historical trends in child mortality and significant changes or milestones.
+- **Regional Disparities**: Analyze regional disparities and possible reasons for these differences.
+- **Socioeconomic Factors**: Investigate the socioeconomic factors that correlate with child mortality rates, such as GDP, education, healthcare access, and government policies.
+- **Policy Impact**: Highlight the impact of specific policies or interventions in certain countries that have led to significant improvements.
+
+
+
+
+### **Technical Implementation**
+1. **Data Acquisition**: Use `rvest` and `polite` to scrape data from relevant sources such as World Bank, UNICEF, or other databases that provide child mortality statistics.
+2. **Data Processing**: Clean and preprocess the data using packages like `dplyr` and `tidyr` to make it suitable for visualization.
+3. **Shiny App Development**:
+   - **UI**: Design a user-friendly interface using `shiny` and `shinydashboard`.
+   - **Visualization**: Create interactive visualizations using `ggplot2`, `plotly`, and `leaflet` for maps.
+   - **Interactivity**: Implement interactive features such as drop-down menus, sliders, and clickable elements to explore different aspects of the data.
+4. **Deployment**: Deploy your Shiny app on `shinyapps.io` and ensure it is accessible.
+
+### **Example Data Sources**
+- **UNICEF Data**: [UNICEF Data on Child Mortality](https://data.unicef.org/topic/child-survival/under-five-mortality/)
+- **World Bank Data**: [World Bank Open Data](https://data.worldbank.org/indicator/SH.DYN.MORT)
+- **WHO Data**: [WHO Mortality Data](https://www.who.int/data/gho/data/themes/mortality-and-global-health-estimates)
+
+By leveraging these visualizations and ensuring your Shiny app is both informative and engaging, you can provide valuable insights into the issue of child mortality and effectively communicate your findings.
+
+
+
+
+```{r}
+# Load necessary libraries
+library(shiny)
+library(leaflet)
+library(plotly)
+library(dplyr)
+
+# Define UI
+ui <- fluidPage(
+  titlePanel("COVID-19 Vaccination Impact in South America"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("country", "Select a Country", choices = unique(final_child_mortality_data$country)),
+      dateRangeInput("dateRange", "Select Date Range", start = min(final_child_mortality_data$date), end = max(final_child_mortality_data$date))
+    ),
+    mainPanel(
+      leafletOutput("map"),
+      plotlyOutput("time_series")
+    )
+  )
+)
+
+# Define Server
+server <- function(input, output) {
+  filtered_data <- reactive({
+    final_child_mortality_data %>%
+      filter(country == input$country)
+      # Assuming the dataset has date and indicator columns
+  })
+  
+  output$map <- renderLeaflet({
+    leaflet(data = filtered_data()) %>%
+      addTiles() %>%
+      addMarkers(~longitude, ~latitude, popup = ~country)  # Replace longitude and latitude with appropriate column names
+  })
+  
+  output$time_series <- renderPlotly({
+    plot_data <- filtered_data() %>%
+      gather(key = "indicator", value = "value", -country, -date)  # Adjust according to actual column names
+    ggplot(plot_data, aes(x = as.Date(date), y = value, color = indicator)) +
+      geom_line() +
+      theme_minimal() +
+      labs(title = "Time Series Analysis", x = "Date", y = "Value")
+  })
+}
+
+# Run the application
+shinyApp(ui = ui, server = server)
+
+```
+
+
+
+
+
+
+
+We did a brief analysis of child mortality rates across various countries, regions, and economic backgrounds.
+
+At first, we did some data cleaning and preparation by utilizing web scraping techniques to gather information from the World Bank's World Development Indicators (WDI) website. The narrative introduces the significance of child mortality as an indicator of a country's health, development, and economic conditions. It emphasizes how high child mortality rates can reflect inadequate healthcare services, socioeconomic challenges, and disparities in access to resources. The subsequent sections delve into the methods employed, detailing the steps taken to clean and organize the data for analysis.
+
+The document transitions into the visualization phase, where an interactive dashboard is created using the Shiny framework in R. This dashboard allows users to explore child mortality data through a map interface. Users can select different variables, such as neonatal mortality rates, and choose from various color schemes to visualize the data. The dashboard's 'Map' tab features a Leaflet map that dynamically updates based on user selections, providing a visually engaging way to explore trends in child mortality across different regions. Additionally, the 'Description' tab offers contextual information about the dashboard's purpose and functionality, guiding users on how to interact with the visualization effectively.
+
+Overall, this document presents a comprehensive approach to analyzing and visualizing child mortality data, combining data cleaning techniques with interactive visualization tools to offer insights into the complex factors influencing child well-being globally.
+
+
+
+
+
+
+
